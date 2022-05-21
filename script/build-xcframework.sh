@@ -46,7 +46,7 @@ set -e
 BUILD_THREADS=$(sysctl hw.ncpu | awk '{print $2}')
 export BUILD_THREADS
 LIBSSH_TAG=1.10.0
-LIBSSL_TAG=OpenSSL_1_1_1l
+LIBSSL_TAG=OpenSSL_1_1_1o
 
 TAG=$LIBSSH_TAG+$LIBSSL_TAG
 ZIPNAME=CSSH-$TAG.xcframework.zip
