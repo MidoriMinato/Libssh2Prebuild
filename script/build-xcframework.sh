@@ -49,9 +49,13 @@ LIBSSH_TAG=1.10.0
 LIBSSL_TAG=OpenSSL_1_1_1o
 
 TAG=$LIBSSH_TAG+$LIBSSL_TAG
-ZIPNAME=CSSH-$TAG.xcframework.zip
+ZIPNAME_SSH2=libssh2.xcframework.zip
+ZIPNAME_CRYPTO=libcrypto.xcframework.zip
+ZIPNAME_SSL=libssl.xcframework.zip
 GIT_REMOTE_URL_UNFINISHED=$(git config --get remote.origin.url|sed "s=^ssh://==; s=^https://==; s=:=/=; s/git@//; s/.git$//;")
-DOWNLOAD_URL=https://$GIT_REMOTE_URL_UNFINISHED/releases/download/$TAG/$ZIPNAME
+DOWNLOAD_URL_SSH2=https://$GIT_REMOTE_URL_UNFINISHED/releases/download/$TAG/$ZIPNAME_SSH2
+DOWNLOAD_URL_CRYPTO=https://$GIT_REMOTE_URL_UNFINISHED/releases/download/$TAG/$ZIPNAME_CRYPTO
+DOWNLOAD_URL_SSL=https://$GIT_REMOTE_URL_UNFINISHED/releases/download/$TAG/$ZIPNAME_SSL
 
 ROOT_PATH=$(cd "$(dirname "$0")/.."; pwd -P)
 export ROOT_PATH
@@ -93,6 +97,8 @@ buildLibrary "$BUILD/appletvos" "appletvos" "AppleTVOS" "" "arm64" "9.0"
 buildLibrary "$BUILD/watchsimulator" "watchsimulator" "WatchSimulator" "" "x86_64 arm64" "2.0"
 buildLibrary "$BUILD/watchos" "watchos" "WatchOS" "" "armv7k arm64_32" "2.0"
 
+#Create xcramework (libssh2)
+
 xcodebuild -create-xcframework \
  -library "$BUILD/macosx/lib/libssh2.a" \
  -headers "$BUILD/macosx/include" \
@@ -110,11 +116,47 @@ xcodebuild -create-xcframework \
  -headers "$BUILD/watchsimulator/include" \
  -library "$BUILD/watchos/lib/libssh2.a" \
  -headers "$BUILD/watchos/include" \
- -output CSSH.xcframework
+ -output libssh2.xcframework
 
-zip --recurse-paths -X --quiet $ZIPNAME CSSH.xcframework
-rm -rf CSSH.xcframework
-CHECKSUM=$(shasum -a 256 -b $ZIPNAME | awk '{print $1}')
+zip --recurse-paths -X --quiet $ZIPNAME_SSH2 libssh2.xcframework
+rm -rf libssh2.xcframework
+CHECKSUM_SSH2=$(shasum -a 256 -b $ZIPNAME_SSH2 | awk '{print $1}')
+
+#Create xcramework (libcrypto)
+
+xcodebuild -create-xcframework \
+ -library "$BUILD/macosx/lib/libcrypto.a" \
+ -library "$BUILD/iphoneos/lib/libcrypto.a" \
+ -library "$BUILD/iphonesimulator/lib/libcrypto.a" \
+ -library "$BUILD/maccatalyst/lib/libcrypto.a" \
+ -library "$BUILD/appletvsimulator/lib/libcrypto.a" \
+ -library "$BUILD/appletvos/lib/libcrypto.a" \
+ -library "$BUILD/watchsimulator/lib/libcrypto.a" \
+ -library "$BUILD/watchos/lib/libcrypto.a" \
+ -output libcrypto.xcframework
+
+zip --recurse-paths -X --quiet $ZIPNAME_CRYPTO libcrypto.xcframework
+rm -rf libcrypto.xcframework
+CHECKSUM_CRYPTO=$(shasum -a 256 -b $ZIPNAME_CRYPTO | awk '{print $1}')
+
+#Create xcramework (libssl)
+
+xcodebuild -create-xcframework \
+ -library "$BUILD/macosx/lib/libssl.a" \
+ -library "$BUILD/iphoneos/lib/libssl.a" \
+ -library "$BUILD/iphonesimulator/lib/libssl.a" \
+ -library "$BUILD/maccatalyst/lib/libssl.a" \
+ -library "$BUILD/appletvsimulator/lib/libssl.a" \
+ -library "$BUILD/appletvos/lib/libssl.a" \
+ -library "$BUILD/watchsimulator/lib/libssl.a" \
+ -library "$BUILD/watchos/lib/libssl.a" \
+ -output libssl.xcframework
+
+zip --recurse-paths -X --quiet $ZIPNAME_SSL libssl.xcframework
+rm -rf libssl.xcframework
+CHECKSUM_SSL=$(shasum -a 256 -b $ZIPNAME_SSL | awk '{print $1}')
+
+#Create Package.swift
 
 cat >Package.swift << EOL
 // swift-tools-version:5.3
@@ -122,17 +164,27 @@ cat >Package.swift << EOL
 import PackageDescription
 
 let package = Package(
-    name: "CSSH",
+    name: "SSH2",
     products: [
-        .library(name: "CSSH", targets: ["CSSH"])
+        .library(name: "libssh2", targets: ["libssh2"]),
+        .library(name: "libcrypto", targets: ["libcrypto"]),
+        .library(name: "libssl", targets: ["libssl"])
     ],
     targets: [
-        .binaryTarget(name: "CSSH",
-                      url: "$DOWNLOAD_URL",
-                      checksum: "$CHECKSUM")
+        .binaryTarget(name: "libssh2",
+                      url: "$DOWNLOAD_URL_SSH2",
+                      checksum: "$CHECKSUM_SSH2"),
+        .binaryTarget(name: "libcrypto",
+                      url: "$DOWNLOAD_URL_CRYPTO",
+                      checksum: "$CHECKSUM_CRYPTO"),
+        .binaryTarget(name: "libssl",
+                      url: "$DOWNLOAD_URL_SSL",
+                      checksum: "$CHECKSUM_SSL")
     ]
 )
 EOL
+
+#Commit
 
 if [[ $1 == "commit" ]]; then
 
@@ -141,7 +193,7 @@ git commit -m "Build $TAG"
 git tag $TAG
 git push
 git push --tags
-gh release create "$TAG" $ZIPNAME --title "$TAG" --notes-file $ROOT_PATH/script/release-note.md
+gh release create "$TAG" $ZIPNAME_SSH2 $ZIPNAME_CRYPTO $ZIPNAME_SSL --title "$TAG" --notes-file $ROOT_PATH/script/release-note.md
 
 fi
 
