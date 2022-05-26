@@ -32,8 +32,11 @@ buildLibrary () {
 
   "$ROOT_PATH/script/build-openssl.sh"
   "$ROOT_PATH/script/build-libssh2.sh"
+  if [[ $PLATFORM == iPhoneOS ]] || [[ $PLATFORM == iPhoneSimulator ]] || [[ $PLATFORM == MacOSX ]]; then
+	"$ROOT_PATH/script/build-libgit2.sh"
+  fi
 
-  rm -rf "$TEMPPATH"
+#  rm -rf "$TEMPPATH"
 }
 
 
@@ -47,15 +50,18 @@ BUILD_THREADS=$(sysctl hw.ncpu | awk '{print $2}')
 export BUILD_THREADS
 LIBSSH_TAG=1.10.0
 LIBSSL_TAG=OpenSSL_1_1_1o
+LIBGIT_TAG=v1.3.1
 
 TAG=$LIBSSH_TAG+$LIBSSL_TAG
 ZIPNAME_SSH2=libssh2.xcframework.zip
 ZIPNAME_CRYPTO=libcrypto.xcframework.zip
 ZIPNAME_SSL=libssl.xcframework.zip
+ZIPNAME_GIT2=libgit2.xcframework.zip
 GIT_REMOTE_URL_UNFINISHED=$(git config --get remote.origin.url|sed "s=^ssh://==; s=^https://==; s=:=/=; s/git@//; s/.git$//;")
 DOWNLOAD_URL_SSH2=https://$GIT_REMOTE_URL_UNFINISHED/releases/download/$TAG/$ZIPNAME_SSH2
 DOWNLOAD_URL_CRYPTO=https://$GIT_REMOTE_URL_UNFINISHED/releases/download/$TAG/$ZIPNAME_CRYPTO
 DOWNLOAD_URL_SSL=https://$GIT_REMOTE_URL_UNFINISHED/releases/download/$TAG/$ZIPNAME_SSL
+DOWNLOAD_URL_GIT2=https://$GIT_REMOTE_URL_UNFINISHED/releases/download/$TAG/$ZIPNAME_GIT2
 
 ROOT_PATH=$(cd "$(dirname "$0")/.."; pwd -P)
 export ROOT_PATH
@@ -66,16 +72,19 @@ export TEMPPATH=$ROOT_PATH/temp
 
 export LIBSSLDIR="$TEMPPATH/openssl"
 export LIBSSHDIR="$TEMPPATH/libssh2"
+export LIBGITDIR="$TEMPPATH/libgit2"
 export OPENSSL_SOURCE="$BUILD/openssl/src/"
 export LIBSSH_SOURCE="$BUILD/libssh2/src/"
+export LIBGIT_SOURCE="$BUILD/libgit2/src/"
 
 #Download
 
-if [[ -d "$OPENSSL_SOURCE" ]] && [[ -d "$LIBSSH_SOURCE" ]]; then
+if [[ -d "$OPENSSL_SOURCE" ]] && [[ -d "$LIBSSH_SOURCE" ]] && [[ -d "$LIBGIT_SOURCE" ]]; then
   echo "Sources already downloaded"
 else
   fetchSource "https://github.com/libssh2/libssh2/releases/download/libssh2-$LIBSSH_TAG/libssh2-$LIBSSH_TAG.tar.gz" "libssh2.tar.gz" "$LIBSSH_SOURCE"
   fetchSource "https://github.com/openssl/openssl/archive/$LIBSSL_TAG.tar.gz" "openssl.tar.gz" "$OPENSSL_SOURCE"
+  fetchSource "https://github.com/libgit2/libgit2/archive/$LIBGIT_TAG.tar.gz" "libgit2.tar.gz" "$LIBGIT_SOURCE"
 fi
 
 #Build
@@ -101,21 +110,21 @@ buildLibrary "$BUILD/watchos" "watchos" "WatchOS" "" "armv7k arm64_32" "2.0"
 
 xcodebuild -create-xcframework \
  -library "$BUILD/macosx/lib/libssh2.a" \
- -headers "$BUILD/macosx/include" \
+ -headers "$BUILD/macosx/include-libssh2" \
  -library "$BUILD/iphoneos/lib/libssh2.a" \
- -headers "$BUILD/iphoneos/include" \
+ -headers "$BUILD/iphoneos/include-libssh2" \
  -library "$BUILD/iphonesimulator/lib/libssh2.a" \
- -headers "$BUILD/iphonesimulator/include" \
+ -headers "$BUILD/iphonesimulator/include-libssh2" \
  -library "$BUILD/maccatalyst/lib/libssh2.a" \
- -headers "$BUILD/maccatalyst/include" \
+ -headers "$BUILD/maccatalyst/include-libssh2" \
  -library "$BUILD/appletvsimulator/lib/libssh2.a" \
- -headers "$BUILD/appletvsimulator/include" \
+ -headers "$BUILD/appletvsimulator/include-libssh2" \
  -library "$BUILD/appletvos/lib/libssh2.a" \
- -headers "$BUILD/appletvos/include" \
+ -headers "$BUILD/appletvos/include-libssh2" \
  -library "$BUILD/watchsimulator/lib/libssh2.a" \
- -headers "$BUILD/watchsimulator/include" \
+ -headers "$BUILD/watchsimulator/include-libssh2" \
  -library "$BUILD/watchos/lib/libssh2.a" \
- -headers "$BUILD/watchos/include" \
+ -headers "$BUILD/watchos/include-libssh2" \
  -output libssh2.xcframework
 
 zip --recurse-paths -X --quiet $ZIPNAME_SSH2 libssh2.xcframework
@@ -155,6 +164,21 @@ xcodebuild -create-xcframework \
 zip --recurse-paths -X --quiet $ZIPNAME_SSL libssl.xcframework
 rm -rf libssl.xcframework
 CHECKSUM_SSL=$(shasum -a 256 -b $ZIPNAME_SSL | awk '{print $1}')
+ 
+#Create xcramework (libgit2)
+
+xcodebuild -create-xcframework \
+ -library "$BUILD/iphoneos/lib/libgit2.a" \
+ -headers "$BUILD/iphoneos/include-libgit2" \
+ -library "$BUILD/iphonesimulator/lib/libgit2.a" \
+ -headers "$BUILD/iphonesimulator/include-libgit2" \
+ -library "$BUILD/maccatalyst/lib/libgit2.a" \
+ -headers "$BUILD/maccatalyst/include-libgit2" \
+ -output libgit2.xcframework
+
+zip --recurse-paths -X --quiet $ZIPNAME_GIT2 libgit2.xcframework
+rm -rf libgit2.xcframework
+CHECKSUM_GIT2=$(shasum -a 256 -b $ZIPNAME_GIT2 | awk '{print $1}')
 
 #Create Package.swift
 
@@ -168,7 +192,8 @@ let package = Package(
     products: [
         .library(name: "libssh2", targets: ["libssh2"]),
         .library(name: "libcrypto", targets: ["libcrypto"]),
-        .library(name: "libssl", targets: ["libssl"])
+        .library(name: "libssl", targets: ["libssl"]),
+        .library(name: "libgit2", targets: ["libgit2"])
     ],
     targets: [
         .binaryTarget(name: "libssh2",
@@ -179,7 +204,10 @@ let package = Package(
                       checksum: "$CHECKSUM_CRYPTO"),
         .binaryTarget(name: "libssl",
                       url: "$DOWNLOAD_URL_SSL",
-                      checksum: "$CHECKSUM_SSL")
+                      checksum: "$CHECKSUM_SSL"),
+        .binaryTarget(name: "libgit2",
+                      url: "$DOWNLOAD_URL_GIT2",
+                      checksum: "$CHECKSUM_GIT2")
     ]
 )
 EOL
@@ -193,7 +221,7 @@ git commit -m "Build $TAG"
 git tag $TAG
 git push
 git push --tags
-gh release create "$TAG" $ZIPNAME_SSH2 $ZIPNAME_CRYPTO $ZIPNAME_SSL --title "$TAG" --notes-file $ROOT_PATH/script/release-note.md
+gh release create "$TAG" $ZIPNAME_SSH2 $ZIPNAME_CRYPTO $ZIPNAME_SSL $ZIPNAME_GIT2 --title "$TAG" --notes-file $ROOT_PATH/script/release-note.md
 
 fi
 
