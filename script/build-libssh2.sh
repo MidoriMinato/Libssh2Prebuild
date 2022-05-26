@@ -84,10 +84,9 @@ do
     echo "Libssh2 - $PLATFORM $ARCH done."
 done
 
-buildFatLibrary "$LIPO_SSH2" "$BUILT_PRODUCTS_DIR/lib/libssh.a"
-copyHeaders "$LIBSSH_SOURCE/include/" "$BUILT_PRODUCTS_DIR/include"
-cp "$ROOT_PATH/script/module.modulemap" "$BUILT_PRODUCTS_DIR/include"
+buildFatLibrary "$LIPO_SSH2" "$BUILT_PRODUCTS_DIR/lib/libssh2.a"
+copyHeaders "$LIBSSH_SOURCE/include/" "$BUILT_PRODUCTS_DIR/include-libssh2"
+cp "$ROOT_PATH/script/module.modulemap" "$BUILT_PRODUCTS_DIR/include-libssh2"
 cd "$BUILT_PRODUCTS_DIR/lib"
-libtool -static -D -o libssh2.a libssh.a libssl.a libcrypto.a >> "$LOG" 2>&1
 
 echo "Libssh2 - $PLATFORM done."
