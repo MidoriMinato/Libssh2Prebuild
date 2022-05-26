@@ -1,6 +1,11 @@
-module CSSH {
+module libssh2 {
     header "libssh2.h"
     header "libssh2_sftp.h"
     header "libssh2_publickey.h"
+    export *
+}
+
+module libgit2 {
+    header "git2.h"
     export *
 }
