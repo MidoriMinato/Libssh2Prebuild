@@ -11,3 +11,5 @@ Libssh2 1.9.0 build.
 | tvOS              | arm64              |
 | tvOS Simulator    | x86_64 arm64       |
 | Maccatalyst       | x86_64 arm64       |
+
+* libgit2 is not built for watchOS, tvOS.
