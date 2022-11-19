@@ -3,9 +3,9 @@
 import PackageDescription
 
 let package = Package(
-    name: "SSH2",
+    name: "libssh2",
     platforms: [
-        .macOS(.v10_14), .iOS(.v13)
+        .macOS(.v8), .iOS(.v13)
     ],
     products: [
         .library(name: "libssh2", targets: ["libssh2"]),
