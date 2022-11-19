@@ -8,14 +8,15 @@ let package = Package(
         .macOS(.v10_14), .iOS(.v13)
     ],
     products: [
-        .library(name: "libssh2", targets: ["libssh2"]),
-        .library(name: "libcrypto", targets: ["libcrypto"]),
-        .library(name: "libssl", targets: ["libssl"]),
-        .library(name: "libgit2", targets: ["libgit2"])
+        .library(name: "libssh2", targets: ["dummy","libssh2"]),
+        .library(name: "libcrypto", targets: ["dummy","libcrypto"]),
+        .library(name: "libssl", targets: ["dummy","libssl"]),
+        .library(name: "libgit2", targets: ["dummy","libgit2"])
     ],
     dependencies: [
     ],
     targets: [
+        .target(name: "dummy"),
         .binaryTarget(name: "libssh2",
                       url: "https://github.com/MidoriMinato/Libssh2Prebuild/releases/download/1.10.0+OpenSSL_1_1_1o/libssh2.xcframework.zip",
                       checksum: "ea9fc91f6ab9c00ea0886907c8980f3dcf7da389e6ccaf205ee3f929a9a9d6da"),
