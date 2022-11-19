@@ -4,11 +4,16 @@ import PackageDescription
 
 let package = Package(
     name: "SSH2",
+    platforms: [
+        .macOS(.v10_14), .iOS(.v13)
+    ],
     products: [
         .library(name: "libssh2", targets: ["libssh2"]),
         .library(name: "libcrypto", targets: ["libcrypto"]),
         .library(name: "libssl", targets: ["libssl"]),
         .library(name: "libgit2", targets: ["libgit2"])
+    ],
+    dependencies: [
     ],
     targets: [
         .binaryTarget(name: "libssh2",
