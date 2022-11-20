@@ -5,7 +5,7 @@ import PackageDescription
 let package = Package(
     name: "libssh2",
     platforms: [
-        .macOS(.v10_14), .iOS(.v13)
+        .macOS(.v10_9), .iOS(.v13), .tvOS(.v13)
     ],
     products: [
         .library(name: "libssh2", targets: ["dummy","libssh2"]),
