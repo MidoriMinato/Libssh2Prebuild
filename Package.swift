@@ -16,15 +16,15 @@ let package = Package(
         .target(name: "dummy"),
         .binaryTarget(name: "libssh2",
                       url: "https://github.com/MidoriMinato/Libssh2Prebuild/releases/download/1.11.0+OpenSSL_1_1_1v/libssh2.xcframework.zip",
-                      checksum: "b553d5e53250f80627b1899cc9de4ccbd0dead1d1d1e69ed68c6bce95f938ad5"),
+                      checksum: "766e9d92fd1a31d1fed43cea92d060ba35fbc23d7dda0c55fc860fe778bb043e"),
         .binaryTarget(name: "libcrypto",
                       url: "https://github.com/MidoriMinato/Libssh2Prebuild/releases/download/1.11.0+OpenSSL_1_1_1v/libcrypto.xcframework.zip",
-                      checksum: "e576c62997285f3a31d414959d15c7ad45921c08532b174ef98eaf5186502c49"),
+                      checksum: "6a6f92bba102c14d0f9ab11caab04ddef3053e78806d050c51aa3aba81ae496a"),
         .binaryTarget(name: "libssl",
                       url: "https://github.com/MidoriMinato/Libssh2Prebuild/releases/download/1.11.0+OpenSSL_1_1_1v/libssl.xcframework.zip",
-                      checksum: "845a5df12e692cf0f1882344380df4e5e6c14b081f63a24ed3d61c8906846127"),
+                      checksum: "8880e1af4580ff82ccb252514db226665a35759192a9ce25bea1d06dd78d149b"),
         .binaryTarget(name: "libgit2",
                       url: "https://github.com/MidoriMinato/Libssh2Prebuild/releases/download/1.11.0+OpenSSL_1_1_1v/libgit2.xcframework.zip",
-                      checksum: "1fd1fe16323eb5f6482e48dd206a8b61d32c93307d48e764f683beafd34b051f")
+                      checksum: "bbaa8121a64f877a9d784258c68708ac47984724f7d0209db05441c00f032fc3")
     ]
 )
