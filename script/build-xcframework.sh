@@ -188,14 +188,17 @@ cat >Package.swift << EOL
 import PackageDescription
 
 let package = Package(
-    name: "SSH2",
+    name: "libssh2",
     products: [
-        .library(name: "libssh2", targets: ["libssh2"]),
-        .library(name: "libcrypto", targets: ["libcrypto"]),
-        .library(name: "libssl", targets: ["libssl"]),
-        .library(name: "libgit2", targets: ["libgit2"])
+        .library(name: "libssh2", targets: ["dummy","libssh2"]),
+        .library(name: "libcrypto", targets: ["dummy","libcrypto"]),
+        .library(name: "libssl", targets: ["dummy","libssl"]),
+        .library(name: "libgit2", targets: ["dummy","libgit2"])
+    ],
+    dependencies: [
     ],
     targets: [
+        .target(name: "dummy"),
         .binaryTarget(name: "libssh2",
                       url: "$DOWNLOAD_URL_SSH2",
                       checksum: "$CHECKSUM_SSH2"),
